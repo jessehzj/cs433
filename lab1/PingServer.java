@@ -22,7 +22,8 @@
 
           int port = Integer.parseInt(args[0]);
 
-		  String password = String.format("%5d", Integer.parseInt(args[1]));
+		  String password = String.format("%05d", Integer.parseInt(args[1]));
+		  //System.out.println("password:" + password);
           // Create random number generator for use in simulating
           // packet loss and network delay.
           Random random = new Random();
@@ -44,17 +45,7 @@
          
              // Print the received data, for debugging
              printData(request);
-			 if(!getPassword(request).equals(password)){
-                System.out.println(" Incorrect password.");
-                continue;			 
-			 }
 			
-             // Decide whether to reply, or simulate packet loss.
-             if (random.nextDouble() < LOSS_RATE) {
-                System.out.println(" Reply not sent.");
-                continue;
-             }
-
              // Simulate prorogation delay.
              Thread.sleep((int) (random.nextDouble() * 2 * AVERAGE_DELAY));
 
@@ -62,7 +53,20 @@
              InetAddress clientHost = request.getAddress();
              int clientPort = request.getPort();
              byte[] buf = request.getData();
-             
+
+             String password_from_client = new String(buf, 22, 5);
+             System.out.println("password_from_client " + password_from_client +":"+  password );
+			 if(!password_from_client.equals(password)){
+                System.out.println(" Incorrect password.");
+                continue;			 
+			 }
+			 
+			 // Decide whether to reply, or simulate packet loss.
+             if (random.nextDouble() < LOSS_RATE) {
+                System.out.println(" Reply not sent.");
+                continue;
+             }
+                           
              DatagramPacket
              reply = new DatagramPacket(buf, buf.length, 
                                         clientHost, clientPort);
@@ -72,38 +76,6 @@
              System.out.println(" Reply sent.");
          } // end of while
        } // end of main
-
-       private static String getPassword(DatagramPacket request) 
-               throws Exception
-       {
-
-         byte[] buf = request.getData();
-
-          // Wrap the bytes in a byte array input stream,
-          // so that you can read the data as a stream of bytes.
-          ByteArrayInputStream bais 
-              = new ByteArrayInputStream(buf);
-
-          // Wrap the byte array output stream in an input 
-          // stream reader, so you can read the data as a
-          // stream of **characters**: reader/writer handles 
-          // characters
-          InputStreamReader isr 
-              = new InputStreamReader(bais);
-
-          // Wrap the input stream reader in a bufferred reader,
-          // so you can read the character data a line at a time.
-          // (A line is a sequence of chars terminated by any 
-          // combination of \r and \n.)
-          BufferedReader br 
-              = new BufferedReader(isr);
-
-          // The message data is contained in a single line, 
-          // so read this line.
-          String line = br.readLine();
-		  return line.substring(21, 25);         
-       }
-
 
        /* 
         * Print ping data to the standard output stream.
