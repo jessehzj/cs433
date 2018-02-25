@@ -2,7 +2,7 @@
     import java.io.*;
     import java.net.*;
     import java.util.*;
-
+	import java.nio.charset.StandardCharsets;
     /* 
      * Client to send ping requests over UDP.
      */
@@ -43,7 +43,7 @@ public class PingClient
 					/** close client socket. */
 				 	clientSocket.close();
 					int total_RTTs = 0;
-					int min_RTTs = int.MAX_VALUE;
+					int min_RTTs = 10000;
 					int max_RTTs = 0;
 					int valid_count = 0;
 
@@ -68,7 +68,7 @@ public class PingClient
 				String sentence = new String("PING " + String.format ("%02d", count) + " " + client_send_time + " " + String.format ("%05d", password)+ "\\r\\n");
 				System.out.println(sentence);
 
-				byte[] sendData = sentence.getBytes();
+				byte[] sendData = sentence.getBytes(StandardCharsets.US_ASCII);
 				System.out.println("sendData length = " + sendData.length);
 
 				// construct and send datagram
@@ -89,7 +89,7 @@ public class PingClient
 					long client_receive_time = System.currentTimeMillis();
 					RTTs[count] = (int)(client_receive_time - client_send_time);
 					// print output
-					String sentenceFromServer = receivePacket.getData();
+					String sentenceFromServer = new String(receivePacket.getData());
 					System.out.println("From Server: " + sentenceFromServer);
 				}
 
